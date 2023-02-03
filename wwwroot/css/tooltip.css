@@ -1,0 +1,31 @@
+﻿.tooltip {
+    width: 200px;
+}
+
+.tooltip-inner {
+    color: black;
+    border: solid;
+    display: inline-block;
+    background-color: white; !important;
+    border: 2px solid #00abec;
+    border-radius: 4px;
+    box-shadow: none;
+    color: inherit;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0;
+    text-align: center;
+    text-decoration: none;
+    text-shadow: none;
+    text-transform: none;
+    white-space: normal;
+    width: auto;
+    height: auto;
+    padding: 10px 16px;
+}
+
+.tooltip.show {
+    opacity: 1;
+}
