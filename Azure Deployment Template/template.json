@@ -1,0 +1,414 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"connections_sql_1_name": {
+			"defaultValue": "sql-1",
+			"type": "String"
+		},
+		"connections_office365_1_name": {
+			"defaultValue": "office365-1",
+			"type": "String"
+		},
+		"Intake Form Name": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"Logic App Name": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"App Service Plan Name": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"From Email": {
+			"defaultValue": "",
+			"type": "String"
+		},
+		"To Email": {
+			"defaultValue": "",
+			"type": "String"
+		}
+	},
+	"variables": {},
+	"resources": [{
+			"type": "Microsoft.Web/connections",
+			"apiVersion": "2016-06-01",
+			"name": "[parameters('connections_office365_1_name')]",
+			"location": "eastus",
+			"kind": "V1",
+			"properties": {
+				"displayName": "O365 Connection",
+				"statuses": [{
+					"status": "Connected"
+				}],
+				"customParameterValues": {},
+				"nonSecretParameterValues": {},
+				"createdTime": "2022-12-08T01:53:02.9622831Z",
+				"changedTime": "2023-01-29T04:09:59.0717851Z",
+				"api": {
+					"name": "office365",
+					"displayName": "Office 365 Outlook",
+					"description": "Microsoft Office 365 is a cloud-based service that is designed to help meet your organization's needs for robust security, reliability, and user productivity.",
+					"iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1615/1.0.1615.3163/office365/icon.png",
+					"brandColor": "#0078D4",
+					 "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/office365')]",
+					"type": "Microsoft.Web/locations/managedApis"
+				}
+
+			}
+		},
+		{
+			"type": "Microsoft.Web/connections",
+			"apiVersion": "2016-06-01",
+			"name": "[parameters('connections_sql_1_name')]",
+			"location": "eastus",
+			"kind": "V1",
+			"properties": {
+				"displayName": "srdb",
+				"statuses": [{
+					"status": "Connected"
+				}],
+				"customParameterValues": {},
+				"createdTime": "2022-12-02T22:05:14.1392556Z",
+				"changedTime": "2022-12-02T22:05:14.1392556Z",
+				"api": {
+					"name": "sql",
+					"displayName": "SQL Server",
+					"description": "Microsoft SQL Server is a relational database management system developed by Microsoft. Connect to SQL Server to manage data. You can perform various actions such as create, update, get, and delete on rows in a table.",
+					"iconUri": "https://connectoricons-prod.azureedge.net/u/shgogna/sql-move-sqlservertypes-ref/1.0.1614.3130/sql/icon.png",
+					"brandColor": "#ba141a",
+					 "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/sql')]",
+					"type": "Microsoft.Web/locations/managedApis"
+				}
+
+			}
+		},
+		{
+			"type": "Microsoft.Web/serverfarms",
+			"apiVersion": "2022-03-01",
+			"name": "[parameters('App Service Plan Name')]",
+			"location": "East US",
+			"sku": {
+				"name": "F1",
+				"tier": "Free",
+				"size": "F1",
+				"family": "F",
+				"capacity": 0
+			},
+			"kind": "app",
+			"properties": {
+				"perSiteScaling": false,
+				"elasticScaleEnabled": false,
+				"maximumElasticWorkerCount": 1,
+				"isSpot": false,
+				"reserved": false,
+				"isXenon": false,
+				"hyperV": false,
+				"targetWorkerCount": 0,
+				"targetWorkerSizeId": 0,
+				"zoneRedundant": false
+			}
+		},
+		{
+			"type": "Microsoft.Web/sites",
+			"apiVersion": "2022-03-01",
+			"name": "[parameters('Intake Form Name')]",
+			"location": "East US",
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/serverfarms', parameters('App Service Plan Name'))]"
+			],
+			"kind": "app",
+			"identity": {
+				"type": "SystemAssigned"
+			},
+			"properties": {
+				"enabled": true,
+				"hostNameSslStates": [{
+						"name": "planet-sr-intakeform.azurewebsites.net",
+						"sslState": "Disabled",
+						"hostType": "Standard"
+					},
+					{
+						"name": "planet-sr-intakeform.scm.azurewebsites.net",
+						"sslState": "Disabled",
+						"hostType": "Repository"
+					}
+				],
+				"serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('App Service Plan Name'))]",
+				"reserved": false,
+				"isXenon": false,
+				"hyperV": false,
+				"vnetRouteAllEnabled": false,
+				"vnetImagePullEnabled": false,
+				"vnetContentShareEnabled": false,
+				"siteConfig": {
+					"numberOfWorkers": 1,
+					"acrUseManagedIdentityCreds": false,
+					"alwaysOn": false,
+					"http20Enabled": false,
+					"functionAppScaleLimit": 0,
+					"minimumElasticInstanceCount": 0
+				},
+				"scmSiteAlsoStopped": false,
+				"clientAffinityEnabled": true,
+				"clientCertEnabled": false,
+				"clientCertMode": "Required",
+				"hostNamesDisabled": false,
+				"customDomainVerificationId": "FF6A1A239F996450CABA773C8D2BD49324A4EA6E1E1C71ECC5E1A2D1DA2B8869",
+				"containerSize": 0,
+				"dailyMemoryTimeQuota": 0,
+				"httpsOnly": true,
+				"redundancyMode": "None",
+				"storageAccountRequired": false,
+				"keyVaultReferenceIdentity": "SystemAssigned"
+			}
+		},
+		{
+			"type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+			"apiVersion": "2022-03-01",
+			"name": "[concat(parameters('Intake Form Name'), '/ftp')]",
+			"location": "East US",
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', parameters('Intake Form Name'))]"
+			],
+			"properties": {
+				"allow": true
+			}
+		},
+		{
+			"type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+			"apiVersion": "2022-03-01",
+			"name": "[concat(parameters('Intake Form Name'), '/scm')]",
+			"location": "East US",
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', parameters('Intake Form Name'))]"
+			],
+			"properties": {
+				"allow": true
+			}
+		},
+		{
+			"type": "Microsoft.Web/sites/config",
+			"apiVersion": "2022-03-01",
+			"name": "[concat(parameters('Intake Form Name'), '/web')]",
+			"location": "East US",
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', parameters('Intake Form Name'))]"
+			],
+			"properties": {
+				"numberOfWorkers": 1,
+				"defaultDocuments": [
+					"Default.htm",
+					"Default.html",
+					"Default.asp",
+					"index.htm",
+					"index.html",
+					"iisstart.htm",
+					"default.aspx",
+					"index.php",
+					"hostingstart.html"
+				],
+				"netFrameworkVersion": "v6.0",
+				"phpVersion": "5.6",
+				"requestTracingEnabled": false,
+				"remoteDebuggingEnabled": false,
+				"httpLoggingEnabled": false,
+				"acrUseManagedIdentityCreds": false,
+				"logsDirectorySizeLimit": 35,
+				"detailedErrorLoggingEnabled": false,
+				"publishingUsername": "$Planet-sr-IntakeForm",
+				"scmType": "None",
+				"use32BitWorkerProcess": true,
+				"webSocketsEnabled": false,
+				"alwaysOn": false,
+				"managedPipelineMode": "Integrated",
+				"virtualApplications": [{
+					"virtualPath": "/",
+					"physicalPath": "site\\wwwroot",
+					"preloadEnabled": false
+				}],
+				"loadBalancing": "LeastRequests",
+				"experiments": {
+					"rampUpRules": []
+				},
+				"autoHealEnabled": false,
+				"vnetRouteAllEnabled": false,
+				"vnetPrivatePortsCount": 0,
+				"localMySqlEnabled": false,
+				"managedServiceIdentityId": 1489,
+				"ipSecurityRestrictions": [{
+					"ipAddress": "Any",
+					"action": "Allow",
+					"priority": 2147483647,
+					"name": "Allow all",
+					"description": "Allow all access"
+				}],
+				"scmIpSecurityRestrictions": [{
+					"ipAddress": "Any",
+					"action": "Allow",
+					"priority": 2147483647,
+					"name": "Allow all",
+					"description": "Allow all access"
+				}],
+				"scmIpSecurityRestrictionsUseMain": false,
+				"http20Enabled": false,
+				"minTlsVersion": "1.2",
+				"scmMinTlsVersion": "1.2",
+				"ftpsState": "FtpsOnly",
+				"preWarmedInstanceCount": 0,
+				"functionsRuntimeScaleMonitoringEnabled": false,
+				"minimumElasticInstanceCount": 0,
+				"azureStorageAccounts": {}
+			}
+		},
+
+		
+		{
+			"type": "Microsoft.Web/sites/deployments",
+			"apiVersion": "2022-03-01",
+			"name": "[concat(parameters('Intake Form Name'), '/13c6081047494a4a9f43023aa0a5d305')]",
+			"location": "East US",
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', parameters('Intake Form Name'))]"
+			],
+			"properties": {
+				"status": 4,
+				"author_email": "N/A",
+				"author": "N/A",
+				"deployer": "ZipDeploy",
+				"message": "Created via a push deployment",
+				"start_time": "2022-12-01T04:29:24.293913Z",
+				"end_time": "2022-12-01T04:29:30.5296141Z",
+				"active": false
+			}
+		},
+		
+		{
+			"type": "Microsoft.Web/sites/hostNameBindings",
+			"apiVersion": "2022-03-01",
+			"name": "[concat(parameters('Intake Form Name'), '/', parameters('Intake Form Name'), '.azurewebsites.net')]",
+			"location": "East US",
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', parameters('Intake Form Name'))]"
+			],
+			"properties": {
+				"siteName": "Planet-sr-IntakeForm",
+				"hostNameType": "Verified"
+			}
+		},
+		{
+			"type": "Microsoft.Logic/workflows",
+			"apiVersion": "2017-07-01",
+			"name": "[parameters('Logic App Name')]",
+			"location": "eastus",
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/connections', parameters('connections_office365_1_name'))]",
+				"[resourceId('Microsoft.Web/connections', parameters('connections_sql_1_name'))]"
+			],
+			"properties": {
+				"state": "Enabled",
+				"definition": {
+					"$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+					"contentVersion": "1.0.0.0",
+					"parameters": {
+						"$connections": {
+							"defaultValue": {},
+							"type": "Object"
+						}
+					},
+					"triggers": {
+						"When_an_item_is_created_(V2)": {
+							"recurrence": {
+								"frequency": "Minute",
+								"interval": 5
+							},
+							"evaluatedRecurrence": {
+								"frequency": "Minute",
+								"interval": 5
+							},
+							"splitOn": "@triggerBody()?['value']",
+							"type": "ApiConnection",
+							"inputs": {
+								"host": {
+									"connection": {
+										"name": "@parameters('$connections')['sql']['connectionId']"
+									}
+								},
+								"method": "get",
+								"path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[IntakeForm]'))}/onnewitems"
+							}
+						}
+					},
+					"actions": {
+						"Execute_a_SQL_query_(V2)": {
+							"runAfter": {},
+							"type": "ApiConnection",
+							"inputs": {
+								"body": {
+									"query": "SELECT t1.Name, t1.Email,\nCONCAT_WS(' | ', t1.ws, t1.ls, t1.vm) AS Services\nFROM\n(\n    SELECT [ID]\n      ,[Name]\n      ,[Email]\n      ,IIF([RequireServiceWindows] = 1, 'Windows Server', NULL) AS ws\n      ,IIF([RequireServiceLinux] = 1, 'Linux Server', NULL) AS ls\n      ,IIF([RequireServiceVMWithJupyter] = 1, 'VM with Jupyter pre-installed', NULL) as vm\n  FROM [dbo].[IntakeForm] WITH (NOLOCK)\n  WHERE ID = @{triggerBody()?['ID']}\n) t1"
+								},
+								"host": {
+									"connection": {
+										"name": "@parameters('$connections')['sql']['connectionId']"
+									}
+								},
+								"method": "post",
+								"path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/query/sql"
+							}
+						},
+						"For_each": {
+							"foreach": "@body('Execute_a_SQL_query_(V2)')?['resultsets']['Table1']",
+							"actions": {
+								"Send_an_email_(V2)": {
+									"runAfter": {},
+									"type": "ApiConnection",
+									"inputs": {
+										"body": {
+											"Body": "<p>@{triggerBody()?['Name']},<br>\n<br>\nYou have selected the need for the following services:<br>\n@{items('For_each')?['Services']}<br>\n<br>\nPlease run the following script:<br>\nTO DO<br>\n<br>\nRegards,<br>\nPlanet</p>",
+											"Cc": "@triggerBody()?['Email']",
+											"Importance": "Normal",
+											"Subject": "Secure Research Request",
+											"To": "[parameters('To Email')]"
+										},
+										"host": {
+											"connection": {
+												"name": "@parameters('$connections')['office365_1']['connectionId']"
+											}
+										},
+										"method": "post",
+										"path": "/v2/Mail"
+									}
+								}
+							},
+							"runAfter": {
+								"Execute_a_SQL_query_(V2)": [
+									"Succeeded"
+								]
+							},
+							"type": "Foreach"
+						}
+					},
+					"outputs": {}
+				},
+				"parameters": {
+					"$connections": {
+						"value": {
+							"office365_1": {
+								"connectionId": "[resourceId('Microsoft.Web/connections', parameters('connections_office365_1_name'))]",
+								"connectionName": "office365-1",
+								 "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/office365')]"
+							},
+							"sql": {
+								"connectionId": "[resourceId('Microsoft.Web/connections', parameters('connections_sql_1_name'))]",
+								"connectionName": "sql-1",
+								 "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/sql')]"
+							}
+						}
+					}
+				}
+			}
+		}
+	]
+}
